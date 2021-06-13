@@ -122,6 +122,9 @@ public class NewsApi {
             obj = new URL(url);
         } catch (MalformedURLException e) {
             // TODO improve ErrorHandling
+            System.out.println("Error: URL invalid or malformed.");
+            e.printStackTrace();
+        } catch (Exception e){
             e.printStackTrace();
         }
         HttpURLConnection con;
