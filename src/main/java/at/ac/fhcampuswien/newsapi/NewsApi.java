@@ -140,16 +140,17 @@ public class NewsApi {
         } catch (IOException e) {
             // TODO improve ErrorHandling
             System.out.println("Error "+e.getMessage());
+            //throw new NewsApiException("Error in Class NewsApi, method requestData()\n\n" + e.getMessage());
         }
         return response.toString();
     }
 
     protected String buildURL() {
         // TODO ErrorHandling
-        String urlbase = String.format(NEWS_API_URL,getEndpoint().getValue(),getQ(),getApiKey());
-        StringBuilder sb = new StringBuilder(urlbase);
+        String urlBase = String.format(NEWS_API_URL,getEndpoint().getValue(),getQ(),getApiKey());
+        StringBuilder sb = new StringBuilder(urlBase);
 
-        System.out.println(urlbase);
+        System.out.println(urlBase);
 
         if(getFrom() != null){
             sb.append(DELIMITER).append("from=").append(getFrom());
@@ -200,10 +201,10 @@ public class NewsApi {
                 }
             } catch (JsonProcessingException e) {
                 System.out.println("Error: "+e.getMessage());
+                //throw new NewsApiException("Error in Class NewsApi, method getNews()\n\n");
             }
         }
         //TODO improve Errorhandling
         return newsReponse;
     }
 }
-

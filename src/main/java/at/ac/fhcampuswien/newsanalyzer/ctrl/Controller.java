@@ -2,54 +2,54 @@ package at.ac.fhcampuswien.newsanalyzer.ctrl;
 
 import at.ac.fhcampuswien.newsapi.NewsApi;
 import at.ac.fhcampuswien.newsapi.NewsApiBuilder;
+import at.ac.fhcampuswien.newsapi.NewsApiException;
 import at.ac.fhcampuswien.newsapi.beans.Article;
 import at.ac.fhcampuswien.newsapi.beans.NewsResponse;
 import at.ac.fhcampuswien.newsapi.enums.Category;
 import at.ac.fhcampuswien.newsapi.enums.Country;
 import at.ac.fhcampuswien.newsapi.enums.Endpoint;
+import at.ac.fhcampuswien.newsapi.enums.SortBy;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Calendar;
+import java.util.*;
 
 
-import java.util.List;
+import java.util.stream.Collectors;
 
 public class Controller {
 
 	public static final String APIKEY = "889f4de6f3bf4029b384f8c5a3ad8c56";
 
 	private Country country;
-	private String topic;
+	private String keyword;
 	private Category category;
-	private Endpoint endpoint;
+	private SortBy sortBy;
 
-	private boolean useAnalysis;
+	private NewsResponse newsResponse;
 
-	Date date = Calendar.getInstance().getTime();
-	DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
-	String strDate = dateFormat.format(date);
+	private Date date = Calendar.getInstance().getTime();
+	private DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
+	private String strDate = dateFormat.format(date);
 
 	public void process() {
 
-		System.out.println("Start process");
-
 		//TODO implement Error handling
-
-		//TODO load the news based on the parameters
 
 		//TODO implement methods for analysis
 
 		NewsApi newsApi = new NewsApiBuilder()
 				.setApiKey(APIKEY)
-				.setQ(this.topic) //				.setEndPoint(Endpoint.EVERYTHING)
-				.setEndPoint(endpoint)
+				.setQ(this.keyword) //				.setEndPoint(Endpoint.EVERYTHING)
+				.setEndPoint(Endpoint.TOP_HEADLINES)
+				.setFrom("2021-05-20")
 				.setSourceCountry(this.country)
-				.setSourceCategory(category)
+				.setSourceCategory(this.category)
+				.setSortBy(this.sortBy)
 				.createNewsApi();
 
-		NewsResponse newsResponse = newsApi.getNews();
-		if(newsResponse != null){
+		newsResponse = newsApi.getNews();
+		/*if(newsResponse != null){
 			List<Article> articles = newsResponse.getArticles();
 			articles.stream().forEach(article -> System.out.println(article.toString()));
 		}
@@ -62,53 +62,92 @@ public class Controller {
 				.setExcludeDomains("Lifehacker.com")
 				.createNewsApi();
 
-		newsResponse = newsApi.getNews();
-
-		if(newsResponse != null){
-			List<Article> articles = newsResponse.getArticles();
-			articles.stream().forEach(article -> System.out.println(article.toString()));
-		}
-
-		if(useAnalysis){
-			analysis(newsResponse);
-		}
-
-		System.out.println("End process");
+		newsResponse = newsApi.getNews();*/
 	}
 
-	public void setUseAnalysis(boolean useAnalysis){
-		this.useAnalysis=useAnalysis;
+	public void setSortBy(SortBy sortBy){
+		this.sortBy = sortBy;
 	}
 
-	public void setTopic(String topic){
-		this.topic=topic;
+	public void setKeyword(String keyword){
+		this.keyword = keyword;
 	}
 
 	public void setCountry(Country country){
-		this.country=country;
-	}
-	
-	public void setCategory(Category category){
-		this.category=category;
+		this.country = country;
 	}
 
-	public void setLoadEverything(boolean loadEverything){
-		if(loadEverything){
-			endpoint=Endpoint.EVERYTHING;
-		} else {
-			endpoint=Endpoint.TOP_HEADLINES;
-		}
+	public void setCategory(Category category){
+		this.category = category;
 	}
+
+	public void setDate(Date date){
+
+	}
+
+	String authorWithShortestName;
+	int numberOfArticles;
+	List<String> titles = new ArrayList<>();
+	Map<String, Integer> providers = new HashMap<>();
 
 	public void analysis(NewsResponse newsResponse){
+
 		if(newsResponse != null){
+
+			System.out.println();
+			System.out.println("Hier die Ergebnisse unserer hochentwickelten Analysesoftware: ");
+			System.out.println();
+
 			List<Article> articles = newsResponse.getArticles();
-			articles.stream().forEach(article -> System.out.println(article.toString()));
+			//List<Article> authors = articles.stream().filter(article -> article.getAuthor().length() < 10).collect(Collectors.toList());
+
+			//Number of Articles
+			numberOfArticles = (int) articles.stream().count();
+			System.out.println("Anzahl der Artikel: "+numberOfArticles);
+
+			//Which provider delivers the most articles
+			articles.stream().forEach(article -> {
+				if(!providers.containsKey(article.getSource().getName())){
+					providers.put(article.getSource().getName(), 1);
+				} else {
+					providers.put(article.getSource().getName(), providers.get(article.getSource().getName()) + 1);
+				}
+			});
+
+			String providerWithMostArticles = providers.entrySet().stream().max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1).get().getKey();
+			System.out.println("Die Quelle mit den meisten Artikeln ist: "+providerWithMostArticles);
+
+			//Author with Shortest Name
+			authorWithShortestName = articles.get(0).getAuthor();
+			articles.stream().forEach(article -> {
+				if(article != null && !(article.getAuthor() == null) && article.getAuthor().length() < authorWithShortestName.length())
+					authorWithShortestName = article.getAuthor();
+			});
+			System.out.println("Der Autor mit dem kürzesten Namen ist: "+authorWithShortestName);
+
+			//sort for length of articles
+			articles.stream().forEach(article -> {
+				if(!titles.contains(article.getTitle()))
+					titles.add(article.getTitle());
+			});
+
+			titles.sort((t1, t2) -> t2.length() - t1.length());
+			System.out.println("Hier die Titel absteigend nach Länge sortiert:");
+			titles.stream().forEach(System.out::println);
 		}
 	}
 
-	public Object getData() {
-		
-		return null;
+	public NewsResponse getData() {
+		return newsResponse;
 	}
 }
+
+
+
+
+
+
+
+
+
+
