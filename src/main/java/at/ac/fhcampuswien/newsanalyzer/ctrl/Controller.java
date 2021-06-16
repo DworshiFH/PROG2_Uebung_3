@@ -9,13 +9,7 @@ import at.ac.fhcampuswien.newsapi.enums.Category;
 import at.ac.fhcampuswien.newsapi.enums.Country;
 import at.ac.fhcampuswien.newsapi.enums.Endpoint;
 import at.ac.fhcampuswien.newsapi.enums.SortBy;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
-
-
-import java.util.stream.Collectors;
 
 public class Controller {
 
@@ -28,15 +22,8 @@ public class Controller {
 
 	private NewsResponse newsResponse;
 
-	private Date date = Calendar.getInstance().getTime();
-	private DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
-	private String strDate = dateFormat.format(date);
 
 	public void process() {
-
-		//TODO implement Error handling
-
-		//TODO implement methods for analysis
 
 		NewsApi newsApi = new NewsApiBuilder()
 				.setApiKey(APIKEY)
@@ -47,22 +34,11 @@ public class Controller {
 				.setSourceCategory(this.category)
 				.setSortBy(this.sortBy)
 				.createNewsApi();
-
-		newsResponse = newsApi.getNews();
-		/*if(newsResponse != null){
-			List<Article> articles = newsResponse.getArticles();
-			articles.stream().forEach(article -> System.out.println(article.toString()));
+		try{
+			newsResponse = newsApi.getNews();
+		} catch (NewsApiException e){
+			System.out.println("Process could not be executed:\n" + e.getMessage());
 		}
-
-		newsApi = new NewsApiBuilder()
-				.setApiKey(APIKEY)
-				.setQ("corona")
-				.setEndPoint(Endpoint.EVERYTHING)
-				.setFrom(strDate)
-				.setExcludeDomains("Lifehacker.com")
-				.createNewsApi();
-
-		newsResponse = newsApi.getNews();*/
 	}
 
 	public void setSortBy(SortBy sortBy){
@@ -81,10 +57,6 @@ public class Controller {
 		this.category = category;
 	}
 
-	public void setDate(Date date){
-
-	}
-
 	String authorWithShortestName;
 	int numberOfArticles;
 	List<String> titles = new ArrayList<>();
@@ -94,12 +66,9 @@ public class Controller {
 
 		if(newsResponse != null){
 
-			System.out.println();
-			System.out.println("Hier die Ergebnisse unserer hochentwickelten Analysesoftware: ");
-			System.out.println();
+			System.out.println("\nHier die Ergebnisse unserer hochentwickelten Analysesoftware: \n");
 
 			List<Article> articles = newsResponse.getArticles();
-			//List<Article> authors = articles.stream().filter(article -> article.getAuthor().length() < 10).collect(Collectors.toList());
 
 			//Number of Articles
 			numberOfArticles = (int) articles.stream().count();
